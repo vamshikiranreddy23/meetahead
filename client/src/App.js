@@ -35,20 +35,23 @@ function App() {
     fetchPlans();
   }, [isLoggedIn]);
 
-  // ================= GET MESSAGES =================
+  // ================= AUTO FETCH MESSAGES =================
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!selectedUser || !user) return;
+    if (!selectedUser || !user) return;
 
+    const fetchMessages = async () => {
       const res = await fetch(
         `${API}/api/message/${user._id}/${selectedUser._id}`
       );
-
       const data = await res.json();
       setMessages(data);
     };
 
     fetchMessages();
+
+    const interval = setInterval(fetchMessages, 2000); // 🔥 auto refresh
+
+    return () => clearInterval(interval);
   }, [selectedUser]);
 
   // ================= AUTH =================
@@ -75,7 +78,7 @@ function App() {
 
   // ================= ADD PLAN =================
   const addPlan = async () => {
-    if (!user) return;
+    if (!user || !location) return;
 
     await fetch(`${API}/api/plan`, {
       method: "POST",
@@ -110,20 +113,31 @@ function App() {
     });
 
     setText("");
-
-    const res = await fetch(
-      `${API}/api/message/${user._id}/${selectedUser._id}`
-    );
-    const data = await res.json();
-    setMessages(data);
   };
+
+  // ================= GET MY LOCATION =================
+  const myPlan = plans.find(
+    (p) =>
+      p.userId &&
+      user &&
+      p.userId._id.toString() === user._id.toString()
+  );
+
+  const myLocation = myPlan?.location;
+
+  // ================= MATCH USERS =================
+  const matchedUsers = plans.filter(
+    (p) =>
+      p.userId &&
+      user &&
+      p.userId._id.toString() !== user._id.toString() &&
+      p.location === myLocation
+  );
 
   // ================= UNIQUE USERS =================
   const inboxUsers = [
     ...new Map(
-      plans
-        .filter((p) => p.userId && p.userId._id !== user._id)
-        .map((p) => [p.userId._id, p.userId])
+      matchedUsers.map((p) => [p.userId._id, p.userId])
     ).values(),
   ];
 
@@ -194,8 +208,9 @@ function App() {
 
       <br /><br />
 
+      {/* ADD LOCATION */}
       <input
-        placeholder="Enter place"
+        placeholder="Enter your place"
         value={location}
         onChange={(e) => setLocation(e.target.value)}
       />
@@ -203,29 +218,23 @@ function App() {
 
       <h2>People going to same place</h2>
 
-      {plans
-        .filter(
-          (p) =>
-            p.userId &&
-            user &&
-            p.userId._id !== user._id &&
-            p.location === location
-        )
-        .map((p, i) => (
-          <div key={i}>
-            👤 {p.userId.name}
-            <br />
-            <button
-              onClick={() => {
-                setSelectedUser(p.userId);
-                setShowInbox(true);
-              }}
-            >
-              Chat
-            </button>
-            <br /><br />
-          </div>
-        ))}
+      {!myLocation && <p>Add your location first 📍</p>}
+
+      {matchedUsers.map((p, i) => (
+        <div key={i}>
+          👤 {p.userId.name}
+          <br />
+          <button
+            onClick={() => {
+              setSelectedUser(p.userId);
+              setShowInbox(true);
+            }}
+          >
+            Chat
+          </button>
+          <br /><br />
+        </div>
+      ))}
 
       {/* 📥 INBOX */}
       {showInbox && (
@@ -241,7 +250,7 @@ function App() {
             overflowY: "auto",
           }}
         >
-          {/* 🔥 HEADER */}
+          {/* HEADER */}
           <div
             style={{
               display: "flex",
@@ -266,7 +275,7 @@ function App() {
             </h3>
           </div>
 
-          {/* 🧑 USER LIST */}
+          {/* USER LIST */}
           {!selectedUser &&
             inboxUsers.map((u, i) => (
               <div key={i}>
@@ -278,7 +287,7 @@ function App() {
               </div>
             ))}
 
-          {/* 💬 CHAT */}
+          {/* CHAT */}
           {selectedUser && (
             <>
               {messages.map((m, i) => (

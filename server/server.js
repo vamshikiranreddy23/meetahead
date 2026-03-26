@@ -8,8 +8,14 @@ const Message = require("./models/Message");
 
 const app = express();
 
-app.use(cors());
+// ✅ FIX CORS (IMPORTANT)
+app.use(cors({
+  origin: "*"
+}));
+
 app.use(express.json());
+
+// ✅ ROOT CHECK
 app.get("/", (req, res) => {
   res.send("🚀 MeetAhead Backend is Running!");
 });
@@ -30,7 +36,11 @@ app.post("/api/signup", async (req, res) => {
 });
 
 app.post("/api/login", async (req, res) => {
-  const user = await User.findOne(req.body);
+  const user = await User.findOne({
+    email: req.body.email,
+    password: req.body.password
+  });
+
   if (user) res.json({ success: true, user });
   else res.json({ success: false });
 });
@@ -56,7 +66,6 @@ app.post("/api/message", async (req, res) => {
   res.json(msg);
 });
 
-// 🔒 PRIVATE CHAT
 app.get("/api/message/:user1/:user2", async (req, res) => {
   const { user1, user2 } = req.params;
 
@@ -65,17 +74,6 @@ app.get("/api/message/:user1/:user2", async (req, res) => {
       { senderId: user1, receiverId: user2 },
       { senderId: user2, receiverId: user1 },
     ],
-  });
-
-  res.json(msgs);
-});
-
-// 📥 INBOX (ALL USER MESSAGES)
-app.get("/api/inbox/:userId", async (req, res) => {
-  const { userId } = req.params;
-
-  const msgs = await Message.find({
-    $or: [{ senderId: userId }, { receiverId: userId }],
   });
 
   res.json(msgs);
