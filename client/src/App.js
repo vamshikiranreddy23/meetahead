@@ -157,7 +157,7 @@ function App() {
           type="password"
           placeholder="Password"
           onChange={(e) =>
-                setForm({ ...form, password: e.target.value })
+            setForm({ ...form, password: e.target.value })
           }
         />
         <br /><br />
@@ -178,7 +178,7 @@ function App() {
 
       {/* 💬 ICON */}
       <div style={{ position: "absolute", top: 20, left: 20 }}>
-        <button onClick={() => setShowInbox(!showInbox)} style={{ fontSize: 30 }}>
+        <button onClick={() => setShowInbox(true)} style={{ fontSize: 30 }}>
           💬
         </button>
       </div>
@@ -234,14 +234,37 @@ function App() {
             position: "fixed",
             left: 0,
             top: 0,
-            width: 300,
+            width: 320,
             height: "100%",
-            background: "#f0f0f0",
+            background: "#f5f5f5",
             padding: 15,
             overflowY: "auto",
           }}
         >
-          <h3>Inbox 📥</h3>
+          {/* 🔥 HEADER */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              borderBottom: "1px solid #ccc",
+              paddingBottom: 10,
+              marginBottom: 10,
+            }}
+          >
+            <button
+              onClick={() => {
+                setShowInbox(false);
+                setSelectedUser(null);
+              }}
+              style={{ marginRight: 10, fontSize: 18 }}
+            >
+              ⬅
+            </button>
+
+            <h3 style={{ margin: 0 }}>
+              {selectedUser ? selectedUser.name : "Inbox 📥"}
+            </h3>
+          </div>
 
           {/* 🧑 USER LIST */}
           {!selectedUser &&
@@ -255,30 +278,9 @@ function App() {
               </div>
             ))}
 
-          {/* 💬 CHAT SCREEN */}
+          {/* 💬 CHAT */}
           {selectedUser && (
             <>
-              {/* 🔥 HEADER WITH BACK */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  borderBottom: "1px solid #ccc",
-                  paddingBottom: 10,
-                  marginBottom: 10,
-                }}
-              >
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  style={{ marginRight: 10, fontSize: 18 }}
-                >
-                  ⬅
-                </button>
-
-                <h4 style={{ margin: 0 }}>{selectedUser.name}</h4>
-              </div>
-
-              {/* 💬 MESSAGES */}
               {messages.map((m, i) => (
                 <div
                   key={i}
