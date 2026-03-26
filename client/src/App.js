@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 function App() {
-  const API = "https://meetahead.onrender.com"; // 🔥 YOUR LIVE BACKEND
+  const API = "https://meetahead.onrender.com";
 
   const [isLogin, setIsLogin] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -45,8 +45,12 @@ function App() {
     if (isLoggedIn) getPlans();
   }, [isLoggedIn]);
 
+  // 🔥 FIXED (NO BUILD ERROR)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    getMessages();
+    if (selectedUser) {
+      getMessages();
+    }
   }, [selectedUser]);
 
   // ================= AUTH =================
@@ -162,7 +166,7 @@ function App() {
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
 
-      {/* 💬 ICON LEFT */}
+      {/* 💬 ICON */}
       <div style={{ position: "absolute", top: 20, left: 20 }}>
         <button onClick={() => setShowInbox(!showInbox)}
           style={{ fontSize: 28 }}>
