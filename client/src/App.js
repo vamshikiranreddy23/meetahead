@@ -23,35 +23,33 @@ function App() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   // ================= GET PLANS =================
-  const getPlans = async () => {
-    const res = await fetch(`${API}/api/plan`);
-    const data = await res.json();
-    setPlans(data);
-  };
-
-  // ================= GET MESSAGES =================
-  const getMessages = async () => {
-    if (!selectedUser || !user) return;
-
-    const res = await fetch(
-      `${API}/api/message/${user._id}/${selectedUser._id}`
-    );
-
-    const data = await res.json();
-    setMessages(data);
-  };
-
   useEffect(() => {
-    if (isLoggedIn) getPlans();
-  }, [isLoggedIn]);
+    if (!isLoggedIn) return;
 
-  // 🔥 FIXED (NO BUILD ERROR)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchPlans = async () => {
+      const res = await fetch(`${API}/api/plan`);
+      const data = await res.json();
+      setPlans(data);
+    };
+
+    fetchPlans();
+  }, [isLoggedIn, API]);
+
+  // ================= GET MESSAGES (FINAL FIX) =================
   useEffect(() => {
-    if (selectedUser) {
-      getMessages();
-    }
-  }, [selectedUser]);
+    const fetchMessages = async () => {
+      if (!selectedUser || !user) return;
+
+      const res = await fetch(
+        `${API}/api/message/${user._id}/${selectedUser._id}`
+      );
+
+      const data = await res.json();
+      setMessages(data);
+    };
+
+    fetchMessages();
+  }, [selectedUser, user, API]);
 
   // ================= AUTH =================
   const handleSubmit = async () => {
@@ -81,9 +79,7 @@ function App() {
 
     await fetch(`${API}/api/plan`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         location,
         dateTime: "today",
@@ -92,7 +88,10 @@ function App() {
     });
 
     setLocation("");
-    getPlans();
+
+    const res = await fetch(`${API}/api/plan`);
+    const data = await res.json();
+    setPlans(data);
   };
 
   // ================= SEND MESSAGE =================
@@ -101,9 +100,7 @@ function App() {
 
     await fetch(`${API}/api/message`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         senderId: user._id,
         receiverId: selectedUser._id,
@@ -113,7 +110,12 @@ function App() {
     });
 
     setText("");
-    getMessages();
+
+    const res = await fetch(
+      `${API}/api/message/${user._id}/${selectedUser._id}`
+    );
+    const data = await res.json();
+    setMessages(data);
   };
 
   // ================= LOGIN =================
@@ -124,32 +126,22 @@ function App() {
 
         {!isLogin && (
           <>
-            <input
-              placeholder="Name"
+            <input placeholder="Name"
               onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-              }
-            />
-            <br /><br />
+                setForm({ ...form, name: e.target.value })}
+            /><br /><br />
           </>
         )}
 
-        <input
-          placeholder="Email"
+        <input placeholder="Email"
           onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
-          }
-        />
-        <br /><br />
+            setForm({ ...form, email: e.target.value })}
+        /><br /><br />
 
-        <input
-          type="password"
-          placeholder="Password"
+        <input type="password" placeholder="Password"
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
-        />
-        <br /><br />
+            setForm({ ...form, password: e.target.value })}
+        /><br /><br />
 
         <button onClick={handleSubmit}>
           {isLogin ? "Login" : "Signup"}
@@ -162,7 +154,6 @@ function App() {
     );
   }
 
-  // ================= DASHBOARD =================
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
 
@@ -210,9 +201,6 @@ function App() {
           </div>
         ))}
 
-      <hr />
-
-      {/* 📥 INBOX */}
       {showInbox && (
         <div style={{
           position: "fixed",
@@ -222,38 +210,22 @@ function App() {
           height: "100%",
           background: "#eee",
           padding: 20,
-          borderRight: "2px solid #ccc",
           overflowY: "scroll"
         }}>
           <h3>Inbox 📥</h3>
 
-          {plans
-            .filter(p => p.userId && user && p.userId._id !== user._id)
-            .map((p, i) => (
-              <div key={i}>
-                👤 {p.userId.name}
-                <button onClick={() => setSelectedUser(p.userId)}>
-                  Open
-                </button>
-              </div>
-            ))}
-
-          <hr />
-
           {selectedUser && (
             <>
-              <h4>Chat with {selectedUser.name}</h4>
+              <h4>{selectedUser.name}</h4>
 
-              <input
-                value={text}
+              <input value={text}
                 onChange={(e) => setText(e.target.value)}
               />
               <button onClick={sendMessage}>Send</button>
 
               {messages.map((m, i) => (
                 <div key={i}>
-                  <b>{m.senderId === user._id ? "You" : selectedUser.name}:</b>
-                  {" "}{m.text}
+                  <b>{m.senderId === user._id ? "You" : "Other"}:</b> {m.text}
                 </div>
               ))}
             </>
