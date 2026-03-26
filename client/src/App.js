@@ -33,7 +33,7 @@ function App() {
     };
 
     fetchPlans();
-  }, [isLoggedIn, API]);
+  }, [isLoggedIn]);
 
   // ================= GET MESSAGES =================
   useEffect(() => {
@@ -49,7 +49,7 @@ function App() {
     };
 
     fetchMessages();
-  }, [selectedUser, user, API]);
+  }, [selectedUser]);
 
   // ================= AUTH =================
   const handleSubmit = async () => {
@@ -126,22 +126,32 @@ function App() {
 
         {!isLogin && (
           <>
-            <input placeholder="Name"
+            <input
+              placeholder="Name"
               onChange={(e) =>
-                setForm({ ...form, name: e.target.value })}
-            /><br /><br />
+                setForm({ ...form, name: e.target.value })
+              }
+            />
+            <br /><br />
           </>
         )}
 
-        <input placeholder="Email"
+        <input
+          placeholder="Email"
           onChange={(e) =>
-            setForm({ ...form, email: e.target.value })}
-        /><br /><br />
+            setForm({ ...form, email: e.target.value })
+          }
+        />
+        <br /><br />
 
-        <input type="password" placeholder="Password"
+        <input
+          type="password"
+          placeholder="Password"
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })}
-        /><br /><br />
+            setForm({ ...form, password: e.target.value })
+          }
+        />
+        <br /><br />
 
         <button onClick={handleSubmit}>
           {isLogin ? "Login" : "Signup"}
@@ -154,22 +164,28 @@ function App() {
     );
   }
 
+  // ================= DASHBOARD =================
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
 
+      {/* 💬 ICON */}
       <div style={{ position: "absolute", top: 20, left: 20 }}>
-        <button onClick={() => setShowInbox(!showInbox)}
-          style={{ fontSize: 28 }}>
+        <button
+          onClick={() => setShowInbox(!showInbox)}
+          style={{ fontSize: 30 }}
+        >
           💬
         </button>
       </div>
 
       <h1>Welcome 🎉</h1>
 
-      <button onClick={() => {
-        localStorage.removeItem("user");
-        setIsLoggedIn(false);
-      }}>
+      <button
+        onClick={() => {
+          localStorage.removeItem("user");
+          setIsLoggedIn(false);
+        }}
+      >
         Logout
       </button>
 
@@ -185,53 +201,95 @@ function App() {
       <h2>People going to same place</h2>
 
       {plans
-        .filter(p => p.userId && user && p.userId._id !== user._id && p.location === location)
+        .filter(
+          (p) =>
+            p.userId &&
+            user &&
+            p.userId._id !== user._id &&
+            p.location === location
+        )
         .map((p, i) => (
           <div key={i}>
             👤 {p.userId.name}
             <br />
-            <button onClick={() => {
-              setSelectedUser(p.userId);
-              setShowInbox(true);
-            }}>
+            <button
+              onClick={() => {
+                setSelectedUser(p.userId);
+                setShowInbox(true);
+              }}
+            >
               Chat
             </button>
             <br /><br />
           </div>
         ))}
 
+      {/* 📥 INBOX */}
       {showInbox && (
-        <div style={{
-          position: "fixed",
-          left: 0,
-          top: 0,
-          width: 300,
-          height: "100%",
-          background: "#eee",
-          padding: 20,
-          overflowY: "scroll"
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            left: 0,
+            top: 0,
+            width: 300,
+            height: "100%",
+            background: "#f0f0f0",
+            padding: 15,
+            overflowY: "auto",
+          }}
+        >
           <h3>Inbox 📥</h3>
 
           {selectedUser && (
             <>
               <h4>{selectedUser.name}</h4>
 
-              <input value={text}
+              {/* 💬 CHAT BOX */}
+              <div style={{ marginTop: 20 }}>
+                {messages.map((m, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      justifyContent:
+                        m.senderId === user._id
+                          ? "flex-end"
+                          : "flex-start",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background:
+                          m.senderId === user._id
+                            ? "#4CAF50"
+                            : "#ddd",
+                        color:
+                          m.senderId === user._id
+                            ? "white"
+                            : "black",
+                        padding: "10px 15px",
+                        borderRadius: 10,
+                        maxWidth: "70%",
+                      }}
+                    >
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <br />
+
+              <input
+                value={text}
                 onChange={(e) => setText(e.target.value)}
               />
               <button onClick={sendMessage}>Send</button>
-
-              {messages.map((m, i) => (
-                <div key={i}>
-                  <b>{m.senderId === user._id ? "You" : "Other"}:</b> {m.text}
-                </div>
-              ))}
             </>
           )}
         </div>
       )}
-
     </div>
   );
 }
