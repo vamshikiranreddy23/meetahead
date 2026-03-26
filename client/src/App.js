@@ -69,7 +69,7 @@ function App() {
       localStorage.setItem("user", JSON.stringify(data.user));
       setIsLoggedIn(true);
     } else {
-      alert("Invalid ❌ (Signup first)");
+      alert("Invalid ❌");
     }
   };
 
@@ -118,6 +118,15 @@ function App() {
     setMessages(data);
   };
 
+  // ================= UNIQUE USERS =================
+  const inboxUsers = [
+    ...new Map(
+      plans
+        .filter((p) => p.userId && p.userId._id !== user._id)
+        .map((p) => [p.userId._id, p.userId])
+    ).values(),
+  ];
+
   // ================= LOGIN =================
   if (!isLoggedIn) {
     return (
@@ -148,7 +157,7 @@ function App() {
           type="password"
           placeholder="Password"
           onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
+                setForm({ ...form, password: e.target.value })
           }
         />
         <br /><br />
@@ -164,28 +173,22 @@ function App() {
     );
   }
 
-  // ================= DASHBOARD =================
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
 
       {/* 💬 ICON */}
       <div style={{ position: "absolute", top: 20, left: 20 }}>
-        <button
-          onClick={() => setShowInbox(!showInbox)}
-          style={{ fontSize: 30 }}
-        >
+        <button onClick={() => setShowInbox(!showInbox)} style={{ fontSize: 30 }}>
           💬
         </button>
       </div>
 
       <h1>Welcome 🎉</h1>
 
-      <button
-        onClick={() => {
-          localStorage.removeItem("user");
-          setIsLoggedIn(false);
-        }}
-      >
+      <button onClick={() => {
+        localStorage.removeItem("user");
+        setIsLoggedIn(false);
+      }}>
         Logout
       </button>
 
@@ -240,44 +243,69 @@ function App() {
         >
           <h3>Inbox 📥</h3>
 
+          {/* 🧑 USER LIST */}
+          {!selectedUser &&
+            inboxUsers.map((u, i) => (
+              <div key={i}>
+                👤 {u.name}
+                <button onClick={() => setSelectedUser(u)}>
+                  Open
+                </button>
+                <hr />
+              </div>
+            ))}
+
+          {/* 💬 CHAT SCREEN */}
           {selectedUser && (
             <>
-              <h4>{selectedUser.name}</h4>
+              {/* 🔥 HEADER WITH BACK */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderBottom: "1px solid #ccc",
+                  paddingBottom: 10,
+                  marginBottom: 10,
+                }}
+              >
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  style={{ marginRight: 10, fontSize: 18 }}
+                >
+                  ⬅
+                </button>
 
-              {/* 💬 CHAT BOX */}
-              <div style={{ marginTop: 20 }}>
-                {messages.map((m, i) => (
+                <h4 style={{ margin: 0 }}>{selectedUser.name}</h4>
+              </div>
+
+              {/* 💬 MESSAGES */}
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    justifyContent:
+                      m.senderId === user._id
+                        ? "flex-end"
+                        : "flex-start",
+                    marginBottom: 8,
+                  }}
+                >
                   <div
-                    key={i}
                     style={{
-                      display: "flex",
-                      justifyContent:
-                        m.senderId === user._id
-                          ? "flex-end"
-                          : "flex-start",
-                      marginBottom: 10,
+                      background:
+                        m.senderId === user._id ? "#4CAF50" : "#ddd",
+                      color:
+                        m.senderId === user._id ? "white" : "black",
+                      padding: "8px 12px",
+                      borderRadius: 10,
+                      maxWidth: "70%",
                     }}
                   >
-                    <div
-                      style={{
-                        background:
-                          m.senderId === user._id
-                            ? "#4CAF50"
-                            : "#ddd",
-                        color:
-                          m.senderId === user._id
-                            ? "white"
-                            : "black",
-                        padding: "10px 15px",
-                        borderRadius: 10,
-                        maxWidth: "70%",
-                      }}
-                    >
-                      {m.text}
-                    </div>
+                    {m.text}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
 
               <br />
 
