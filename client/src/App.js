@@ -35,7 +35,7 @@ function App() {
     fetchPlans();
   }, [isLoggedIn, API]);
 
-  // ================= GET MESSAGES (FINAL FIX) =================
+  // ================= GET MESSAGES =================
   useEffect(() => {
     const fetchMessages = async () => {
       if (!selectedUser || !user) return;
@@ -69,7 +69,7 @@ function App() {
       localStorage.setItem("user", JSON.stringify(data.user));
       setIsLoggedIn(true);
     } else {
-      alert("Invalid ❌");
+      alert("Invalid ❌ (Signup first)");
     }
   };
 
@@ -157,7 +157,6 @@ function App() {
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
 
-      {/* 💬 ICON */}
       <div style={{ position: "absolute", top: 20, left: 20 }}>
         <button onClick={() => setShowInbox(!showInbox)}
           style={{ fontSize: 28 }}>
