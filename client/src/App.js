@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 
 function App() {
+  const API = "https://meetahead.onrender.com"; // 🔥 YOUR LIVE BACKEND
+
   const [isLogin, setIsLogin] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("user") ? true : false
@@ -22,7 +24,7 @@ function App() {
 
   // ================= GET PLANS =================
   const getPlans = async () => {
-    const res = await fetch("http://localhost:5000/api/plan");
+    const res = await fetch(`${API}/api/plan`);
     const data = await res.json();
     setPlans(data);
   };
@@ -32,7 +34,7 @@ function App() {
     if (!selectedUser || !user) return;
 
     const res = await fetch(
-      `http://localhost:5000/api/message/${user._id}/${selectedUser._id}`
+      `${API}/api/message/${user._id}/${selectedUser._id}`
     );
 
     const data = await res.json();
@@ -50,8 +52,8 @@ function App() {
   // ================= AUTH =================
   const handleSubmit = async () => {
     const url = isLogin
-      ? "http://localhost:5000/api/login"
-      : "http://localhost:5000/api/signup";
+      ? `${API}/api/login`
+      : `${API}/api/signup`;
 
     const res = await fetch(url, {
       method: "POST",
@@ -73,9 +75,11 @@ function App() {
   const addPlan = async () => {
     if (!user) return;
 
-    await fetch("http://localhost:5000/api/plan", {
+    await fetch(`${API}/api/plan`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         location,
         dateTime: "today",
@@ -91,9 +95,11 @@ function App() {
   const sendMessage = async () => {
     if (!text || !selectedUser) return;
 
-    await fetch("http://localhost:5000/api/message", {
+    await fetch(`${API}/api/message`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         senderId: user._id,
         receiverId: selectedUser._id,
@@ -192,7 +198,7 @@ function App() {
             <br />
             <button onClick={() => {
               setSelectedUser(p.userId);
-              setShowInbox(true); // 🔥 auto open inbox
+              setShowInbox(true);
             }}>
               Chat
             </button>
@@ -202,7 +208,7 @@ function App() {
 
       <hr />
 
-      {/* 📥 INBOX + CHAT */}
+      {/* 📥 INBOX */}
       {showInbox && (
         <div style={{
           position: "fixed",
@@ -217,11 +223,10 @@ function App() {
         }}>
           <h3>Inbox 📥</h3>
 
-          {/* USER LIST */}
           {plans
             .filter(p => p.userId && user && p.userId._id !== user._id)
             .map((p, i) => (
-              <div key={i} style={{ marginBottom: 10 }}>
+              <div key={i}>
                 👤 {p.userId.name}
                 <button onClick={() => setSelectedUser(p.userId)}>
                   Open
@@ -231,7 +236,6 @@ function App() {
 
           <hr />
 
-          {/* CHAT */}
           {selectedUser && (
             <>
               <h4>Chat with {selectedUser.name}</h4>
